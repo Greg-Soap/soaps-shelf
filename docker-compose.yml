@@ -1,0 +1,17 @@
+services:
+  shelf:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      PORT: "8000"
+      WTE_URL: http://127.0.0.1:8791
+      WTE_PORT: "8791"
+    volumes:
+      - shelf-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  shelf-data:

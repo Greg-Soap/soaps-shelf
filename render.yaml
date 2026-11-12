@@ -1,0 +1,31 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Deploy: Dashboard → New → Blueprint → connect this repo.
+#
+# After first deploy, attach a persistent disk at /app/data (Starter+),
+# or accept that Free tier wipes SQLite/EPUBs on restart.
+
+services:
+  - type: web
+    name: soaps-shelf
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: WTE_HOST
+        value: "127.0.0.1"
+      - key: WTE_PORT
+        value: "8791"
+      - key: WTE_URL
+        value: "http://127.0.0.1:8791"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_ALLOWED_USER_IDS
+        sync: false

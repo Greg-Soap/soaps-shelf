@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title or book.raw_title }} · Shelf{% endblock %}
+{% block content %}
+<article class="detail">
+  <a class="back" href="/">← Back to shelf</a>
+  <div class="detail-layout">
+    <div class="detail-cover">
+      {% if book.cover_url %}
+        <img src="{{ book.cover_url }}" alt="Cover for {{ book.title or book.raw_title }}" />
+      {% else %}
+        <div class="cover-fallback large">{{ (book.title or book.raw_title)[:1] }}</div>
+      {% endif %}
+    </div>
+    <div class="detail-body">
+      <p class="status status-{{ book.status }}">{{ status_labels.get(book.status, book.status.replace('_', ' ')) }}</p>
+      <h1>{{ book.title or book.raw_title }}</h1>
+      {% if book.title and book.raw_title and book.title != book.raw_title %}
+        <p class="raw">Listed as: {{ book.raw_title }}</p>
+      {% endif %}
+      <p class="authors">{{ book.authors or "Author unknown" }}</p>
+
+      <dl class="meta">
+        {% if book.first_publish_year %}
+          <div><dt>Published</dt><dd>{{ book.first_publish_year }}</dd></div>
+        {% endif %}
+        {% if book.page_count %}
+          <div><dt>Pages</dt><dd>{{ book.page_count }}</dd></div>
+        {% endif %}
+      </dl>
+
+      {% if book.subjects %}
+        <h3>Tags</h3>
+        <p>{{ book.subjects }}</p>
+      {% endif %}
+
+      {% if book.synopsis %}
+        <h3>Synopsis</h3>
+        <p>{{ book.synopsis }}</p>
+      {% endif %}
+
+      <form method="post" action="/books/{{ book.id }}/delete" onsubmit="return confirm('Delete this book permanently?');">
+        <button type="submit" class="danger-button">Delete book</button>
+      </form>
+    </div>
+  </div>
+</article>
+{% endblock %}

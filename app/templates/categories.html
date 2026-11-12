@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Categories · Shelf{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1 class="panel-title">Categories</h1>
+  <p class="panel-lead">Full CRUD for tags you control — LitRPG, 3rd person, Ongoing, etc.</p>
+
+  <form class="category-form" method="post" action="/categories">
+    <label class="sr-only" for="cat-name">Name</label>
+    <input id="cat-name" name="name" type="text" required placeholder="Category name" />
+    <label class="sr-only" for="cat-desc">Description</label>
+    <input id="cat-desc" name="description" type="text" placeholder="Optional description" />
+    <label class="sr-only" for="cat-color">Color</label>
+    <input id="cat-color" name="color" type="text" placeholder="#e0b35a" />
+    <button type="submit">Add category</button>
+  </form>
+
+  {% if not categories %}
+  <p class="empty">No categories yet.</p>
+  {% else %}
+  <ul class="category-list">
+    {% for category in categories %}
+    <li>
+      <div>
+        <strong>{{ category.name }}</strong>
+        <span class="muted">{{ category.slug }} · {{ category.book_count }} books</span>
+        {% if category.description %}<p>{{ category.description }}</p>{% endif %}
+      </div>
+      <form method="post" action="/categories/{{ category.id }}/delete" onsubmit="return confirm('Delete {{ category.name }}?');">
+        <button type="submit" class="danger-button">Delete</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% endblock %}

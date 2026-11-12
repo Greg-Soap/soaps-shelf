@@ -1,0 +1,9 @@
+This directory vendors source from WebToEpub (https://github.com/dteviot/WebToEpub),
+specifically the ExperimentalTabMode fork used as a local reference.
+
+WebToEpub is licensed under the GNU General Public License v3.0 only.
+See LICENSE.md in this directory.
+
+Soap's Shelf uses these parsers via a headless Node runner to scrape fiction
+sites into EPUB packages. Distributing this vendor tree (including in Docker
+images) requires GPL-3 compliance for the combined work.

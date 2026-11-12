@@ -1,0 +1,17 @@
+{
+  "name": "soaps-shelf-compiler-js",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Headless WebToEpub parser runner for Soap's Shelf",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "compile": "node src/cli.mjs"
+  },
+  "dependencies": {
+    "linkedom": "^0.18.12"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,17 @@
+.venv
+venv
+.git
+.cursor
+reference
+mobile
+data/library.db
+data/library.db-*
+data/cache
+data/epubs
+data/raw
+compiler-js/node_modules
+mobile/node_modules
+**/__pycache__
+**/*.pyc
+.env
+agent-transcripts

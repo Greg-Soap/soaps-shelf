@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Compiler · Shelf{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1 class="panel-title">Compiler</h1>
+  <p class="panel-lead">Paste a fiction URL supported by WebToEpub. Chapters are scraped and packed into an EPUB for Prestigio. Jobs run in the background — refresh to see status.</p>
+
+  {% if message %}
+  <p class="flash ok">{{ message }}</p>
+  {% endif %}
+  {% if error %}
+  <p class="flash bad">{{ error }}</p>
+  {% endif %}
+
+  <form class="compiler-form" method="post" action="/compiler">
+    <label for="url">Fiction URL</label>
+    <input id="url" name="url" type="url" required placeholder="https://www.royalroad.com/fiction/…" value="{{ url or '' }}" />
+
+    <div class="compiler-row">
+      <label>
+        Status
+        <select name="status">
+          {% for key, label in status_labels.items() %}
+          <option value="{{ key }}" {% if key == 'want_to_read' %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Chapter limit <span class="hint">(0 = all)</span>
+        <input name="limit" type="number" min="0" value="3" />
+      </label>
+    </div>
+    <p class="hint">Default limit is 3 for a quick test. Set 0 for the full book (can take a while).</p>
+    <button type="submit">Compile EPUB</button>
+  </form>
+
+  <h2 class="panel-subtitle">Adapters</h2>
+  <ul class="plain-list">
+    {% for adapter in adapters %}
+    <li><strong>{{ adapter.label }}</strong> · {{ adapter.hosts }}</li>
+    {% endfor %}
+  </ul>
+
+  <h2 class="panel-subtitle">Recent jobs</h2>
+  {% if not jobs %}
+  <p class="empty">No compile jobs yet.</p>
+  {% else %}
+  <div class="job-table">
+    {% for job in jobs %}
+    <article class="job-row">
+      <p class="job-status status-{{ job.status }}">{{ job.status }}</p>
+      <p class="job-url">{{ job.source_url }}</p>
+      <p class="job-meta">
+        {{ job.adapter }}
+        {% if job.chapter_count %} · {{ job.chapter_count }} ch{% endif %}
+        {% if job.epub_path %}
+          · <a href="/epubs/{{ job.epub_path.split('/')[-1] }}">download</a>
+        {% endif %}
+      </p>
+      {% if job.error %}<p class="job-error">{{ job.error }}</p>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

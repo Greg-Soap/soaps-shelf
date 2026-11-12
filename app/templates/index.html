@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Shelf · Library{% endblock %}
+{% block content %}
+<section class="toolbar">
+  <div class="status-pills" role="navigation" aria-label="Filter by status">
+    <a class="pill {% if not current_status and review != 1 %}active{% endif %}" href="/">All · {{ total }}</a>
+    {% for key, label in status_labels.items() %}
+      {% if counts.get(key, 0) > 0 or current_status == key %}
+      <a class="pill {% if current_status == key %}active{% endif %}" href="/?status={{ key }}{% if query %}&q={{ query|urlencode }}{% endif %}">
+        {{ label }} · {{ counts.get(key, 0) }}
+      </a>
+      {% endif %}
+    {% endfor %}
+    <a class="pill {% if review == 1 %}active{% endif %}" href="/?review=1{% if current_status %}&status={{ current_status }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}">
+      Needs review
+    </a>
+  </div>
+
+  <form class="filters" method="get" action="/">
+    {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}" />{% endif %}
+    {% if review == 1 %}<input type="hidden" name="review" value="1" />{% endif %}
+    <label class="sr-only" for="q">Search</label>
+    <input id="q" name="q" type="search" placeholder="Find a title or author" value="{{ query }}" />
+    <button type="submit">Search</button>
+    {% if query or current_status or review == 1 %}
+      <a class="clear" href="/">Clear</a>
+    {% endif %}
+  </form>
+
+  <form class="add-book" method="post" action="/books/add">
+    <label class="sr-only" for="add-title">Add a title</label>
+    <input id="add-title" name="title" type="text" required placeholder="Add a title — typos OK" autocomplete="off" />
+    <div class="add-book-controls">
+      <label class="sr-only" for="add-status">Status</label>
+      <select id="add-status" name="status">
+        {% for key, label in status_labels.items() %}
+        <option value="{{ key }}" {% if key == 'want_to_read' %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      {% if llm_ready %}
+      <label class="check">
+        <input type="checkbox" name="use_llm" value="1" checked />
+        Ask {{ llm_provider or 'AI' }}
+      </label>
+      {% endif %}
+      <button type="submit">Add book</button>
+    </div>
+  </form>
+</section>
+
+{% if not books %}
+  <p class="empty">This shelf is empty for the current filter.</p>
+{% else %}
+  <section class="library" aria-label="Bookshelves" data-library>
+    {% for book in books %}
+      {% set title = book.title or book.raw_title %}
+      {% set hue = (title|length * 37 + (book.id or 1) * 13) % 360 %}
+      <button
+        type="button"
+        class="book {% if book.cover_url %}has-cover{% else %}spine-only{% endif %}"
+        style="--hue: {{ hue }}; --tilt: {{ -6 + (book.id % 7) }}deg; --shift: {{ (book.id % 5) - 2 }}px;"
+        data-book
+        data-id="{{ book.id }}"
+        data-title="{{ title }}"
+        data-raw-title="{{ book.raw_title }}"
+        data-authors="{{ book.authors or '' }}"
+        data-status="{{ book.status }}"
+        data-status-label="{{ status_labels.get(book.status, book.status.replace('_', ' ')) }}"
+        data-cover-url="{{ book.cover_url or '' }}"
+        data-subjects="{{ book.subjects or '' }}"
+        data-synopsis=""
+        data-year="{{ book.first_publish_year or '' }}"
+        data-pages="{{ book.page_count or '' }}"
+        data-needs-review="{{ 1 if book.needs_review else 0 }}"
+        data-metadata-source="{{ book.metadata_source or '' }}"
+        aria-label="Open {{ title }}"
+      >
+        <span class="book-face">
+          {% if book.cover_url %}
+            <img src="{{ book.cover_url }}" alt="" loading="lazy" />
+          {% else %}
+            <span class="spine-label">{{ title }}</span>
+          {% endif %}
+        </span>
+        <span class="book-edge" aria-hidden="true"></span>
+        {% if book.needs_review %}<span class="book-mark" title="Needs review"></span>{% endif %}
+      </button>
+    {% endfor %}
+  </section>
+{% endif %}
+
+<div id="reader" class="reader" hidden data-llm-ready="{{ 1 if llm_ready else 0 }}">
+  <button type="button" class="reader-backdrop" data-reader-close aria-label="Close book"></button>
+  <div class="reader-stage">
+    <button type="button" class="reader-close" data-reader-close aria-label="Close">×</button>
+    <div class="open-book">
+      <div class="open-left">
+        <div class="open-cover">
+          <img data-reader-cover src="" alt="" />
+          <div class="cover-fallback" data-reader-fallback hidden>?</div>
+        </div>
+      </div>
+      <div class="open-right">
+        <label class="status-edit">
+          <span class="sr-only">Status</span>
+          <select data-reader-status-select aria-label="Reading status">
+            {% for key, label in status_labels.items() %}
+            <option value="{{ key }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <p class="status-note" data-reader-status-note hidden></p>
+        <h2 data-reader-title></h2>
+        <p class="authors" data-reader-author></p>
+        <p class="raw" data-reader-listed hidden></p>
+        <dl class="meta" data-reader-meta></dl>
+        <div data-reader-tags></div>
+        <div data-reader-synopsis></div>
+
+        <form class="fix-title" data-reader-reenrich>
+          <label for="fix-title-input">Fix title / recheck with AI</label>
+          <input id="fix-title-input" name="title" type="text" data-reader-fix-title autocomplete="off" />
+          <div class="fix-actions">
+            <button type="submit" class="ai-button" data-reader-reenrich-submit>
+              {% if llm_ready %}Recheck with {{ llm_provider or 'AI' }}{% else %}Recheck metadata{% endif %}
+            </button>
+            <p class="fix-note" data-reader-reenrich-note hidden></p>
+          </div>
+        </form>
+
+        <form data-reader-delete method="post" action="/" onsubmit="return confirm('Delete this book permanently?');">
+          <button type="submit" class="danger-button">Delete book</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
