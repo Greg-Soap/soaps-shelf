@@ -1,6 +1,10 @@
-# Shelf — book library pipeline
+# Soap's Shelf
 
-All-Python weekend project: import Microsoft To Do PDF/txt lists → enrich via Open Library → browse in a simple Jinja gallery. Shared `add_book()` is ready for a future Telegram/WhatsApp bot.
+Personal book library + WebToEpub compiler API, with an Expo mobile client.
+
+**Deploy on Render:** connect this repo as a Blueprint ([`render.yaml`](render.yaml)) or Docker web service. Details: [docs/RENDER.md](docs/RENDER.md).
+
+One container starts FastAPI, the WebToEpub Node runner, and (optionally) the Telegram bot. The Expo app is a separate client — set `EXPO_PUBLIC_API_URL` to your Render URL.
 
 ## Setup
 
